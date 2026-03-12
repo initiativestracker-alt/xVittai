@@ -3224,7 +3224,7 @@ function buildWidgetsPage(){
    WIDGET STUDIO
    ════════════════════════════════ */
 /* Load default API key — try configuration.json, fallback to embedded key */
-var FALLBACK_API_KEY='AIzaSyBZTQVA_cyiu4W9xGSDAdNFHXj05f9XErk';
+var FALLBACK_API_KEY=[];
 var defaultApiKey=FALLBACK_API_KEY;
 fetch('configuration.json').then(r=>r.json()).then(cfg=>{if(cfg&&cfg.api_key)defaultApiKey=cfg.api_key}).catch(()=>{});
 function getApiKey(){return localStorage.getItem('xbert_api_key')||defaultApiKey||''}
@@ -7007,3 +7007,4 @@ buildWidgetsPage=function(){origBuildWidgets();attachWidgetExpand()};
 </script>
 </body>
 </html>
+
