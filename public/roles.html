@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>xVitta — Roles</title>
+    <style>
+      :root { --bg:#0d1117; --panel:#131a27; --b2:#253352; --text:#dce4f0; --dim:#8fa3be; --amber:#ffab40; --green:#00e676; --red:#ff5252; }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: var(--bg); color: var(--text); }
+      .wrap { max-width: 980px; margin: 0 auto; padding: 22px 18px; display: grid; gap: 14px; }
+      .card { background: var(--panel); border: 1px solid var(--b2); border-radius: 10px; padding: 16px; }
+      h1 { font-size: 18px; margin: 0 0 6px; }
+      .sub { color: var(--dim); font-size: 13px; margin-bottom: 12px; }
+      .row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: end; }
+      label { display: grid; gap: 6px; font-size: 12px; color: var(--dim); }
+      input, select { width: 100%; padding: 10px 10px; border-radius: 8px; border: 1px solid var(--b2); background: rgba(255,255,255,.02); color: var(--text); }
+      button { appearance: none; border: 1px solid var(--b2); background: transparent; color: var(--text); padding: 10px 12px; border-radius: 8px; font-size: 14px; cursor: pointer; }
+      button:hover, a.btn:hover { border-color: var(--amber); }
+      a.btn { display: inline-block; border: 1px solid var(--b2); color: var(--text); padding: 10px 12px; border-radius: 8px; text-decoration: none; font-size: 14px; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,.06); font-size: 13px; }
+      th { color: var(--dim); font-weight: 600; font-size: 12px; }
+      .msg { padding: 10px 12px; border-radius: 8px; border: 1px solid var(--b2); background: rgba(255,255,255,.02); }
+      .ok { border-color: rgba(0,230,118,.3); color: var(--green); }
+      .bad { border-color: rgba(255,82,82,.3); color: var(--red); }
+      .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+      .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <div class="topbar">
+          <div>
+            <h1>Assign Role</h1>
+            <div class="sub">Roles are persisted in <span class="mono">data/role.json</span>. User-role mappings are persisted in <span class="mono">data/userrole.json</span>.</div>
+          </div>
+          <div class="actions">
+            <a class="btn" href="/">Back</a>
+            <a class="btn" href="/app">Go to App</a>
+            <a class="btn" href="/logout?returnTo=%2F">Logout</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div id="me" class="sub">Loading user...</div>
+        <form id="form" class="row">
+          <label>
+            User (from logins)
+            <select id="userSelect"></select>
+          </label>
+          <label>
+            Or type email
+            <input id="emailInput" type="email" placeholder="user@example.com" />
+          </label>
+          <label>
+            Role
+            <select id="roleSelect"></select>
+          </label>
+          <button type="submit">Save</button>
+        </form>
+        <div id="msg" class="msg" style="display:none;margin-top:12px;"></div>
+      </div>
+
+      <div class="card">
+        <h1 style="margin-bottom:10px;">Current Mappings</h1>
+        <table>
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Role</th>
+              <th>Updated</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      function setMsg(text, ok) {
+        const el = document.getElementById("msg");
+        el.style.display = "block";
+        el.className = "msg " + (ok ? "ok" : "bad");
+        el.textContent = text;
+      }
+
+      function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, (c) => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+      }
+
+      async function loadAll() {
+        const [meRes, rolesRes, usersRes, mapRes] = await Promise.all([
+          fetch("/api/me", { credentials: "include" }),
+          fetch("/api/roles", { credentials: "include" }),
+          fetch("/api/users", { credentials: "include" }),
+          fetch("/api/userroles", { credentials: "include" })
+        ]);
+
+        if (!meRes.ok) {
+          window.location.href = "/login?returnTo=%2Froles.html";
+          return;
+        }
+
+        const me = await meRes.json();
+        document.getElementById("me").innerHTML =
+          "Logged in as <span class='mono'>" + escapeHtml(me.email || me.userId) + "</span> • Current role: <span class='mono'>" + escapeHtml(me.role || "Unassigned") + "</span>";
+
+        const roles = await rolesRes.json();
+        const users = await usersRes.json();
+        const maps = await mapRes.json();
+
+        const roleSelect = document.getElementById("roleSelect");
+        roleSelect.innerHTML = "";
+        (roles.roles || []).forEach((r) => {
+          const opt = document.createElement("option");
+          opt.value = r;
+          opt.textContent = r;
+          roleSelect.appendChild(opt);
+        });
+
+        const userSelect = document.getElementById("userSelect");
+        userSelect.innerHTML = "";
+        const meOpt = document.createElement("option");
+        meOpt.value = me.userId || "";
+        meOpt.textContent = "Me: " + (me.email || me.userId || "");
+        userSelect.appendChild(meOpt);
+
+        const seen = new Set([me.userId]);
+        (users.users || []).forEach((u) => {
+          if (!u.userId || seen.has(u.userId)) return;
+          seen.add(u.userId);
+          const opt = document.createElement("option");
+          opt.value = u.userId;
+          opt.textContent = (u.email ? u.email : u.userId) + (u.email ? " (" + u.userId + ")" : "");
+          userSelect.appendChild(opt);
+        });
+
+        const rows = document.getElementById("rows");
+        rows.innerHTML = "";
+        (maps.userRoles || []).forEach((m) => {
+          const user = (users.users || []).find((u) => u.userId === m.userId);
+          const who = user ? (user.email || user.userId) : m.userId;
+          const tr = document.createElement("tr");
+          tr.innerHTML = "<td class='mono'>" + escapeHtml(who) + "</td><td class='mono'>" + escapeHtml(m.role) + "</td><td class='mono'>" + escapeHtml(m.updatedAt || "") + "</td>";
+          rows.appendChild(tr);
+        });
+      }
+
+      document.getElementById("form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const userId = document.getElementById("userSelect").value;
+        const email = document.getElementById("emailInput").value;
+        const role = document.getElementById("roleSelect").value;
+
+        const res = await fetch("/api/userroles", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ userId, email, role })
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          setMsg(err.error || "Failed to save role", false);
+          return;
+        }
+        setMsg("Role saved", true);
+        document.getElementById("emailInput").value = "";
+        await loadAll();
+      });
+
+      loadAll().catch(() => setMsg("Failed to load role data", false));
+    </script>
+  </body>
+</html>
+

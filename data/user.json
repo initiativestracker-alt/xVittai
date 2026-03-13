@@ -1,0 +1,14 @@
+{
+  "users": [
+    {
+      "userId": "google-oauth2|107620245651074930102",
+      "email": "initiatives.tracker@xtract.io",
+      "auth0Id": "google-oauth2|107620245651074930102",
+      "name": "Initiatives Tracker",
+      "nickname": "initiatives.tracker",
+      "picture": "https://lh3.googleusercontent.com/a/ACg8ocIJWL82TqvXOYchFs5acI89PY1fa3Ug4h4uq7Eq8mrFlKBonQ=s96-c",
+      "updatedAt": "2026-03-13T07:00:57+00:00",
+      "createdAt": "2026-03-13T05:33:38+00:00"
+    }
+  ]
+}

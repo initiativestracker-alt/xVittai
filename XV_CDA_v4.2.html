@@ -996,6 +996,9 @@ tr.done td{opacity:.58}
         <div class="dd-item" data-page="validation"><span class="dd-icon">&#10003;</span>Validation</div>
         <div class="dd-item" data-page="mojo"><span class="dd-icon">&#9711;</span>MOJO</div>
         <div class="dd-item" data-page="tracking"><span class="dd-icon">&#9711;</span>Datavault</div>
+        <div class="dd-sep"></div>
+        <div class="dd-item" id="ddSettings"><span class="dd-icon">&#9881;</span>Settings</div>
+        <div class="dd-item" id="ddLogout"><span class="dd-icon">&#10162;</span>Logout</div>
       </div>
     </div>
     <div class="top-kpis">
@@ -3350,6 +3353,22 @@ document.querySelectorAll('.dd-item[data-page]').forEach(item=>{
     if(pg==='tracking'){ initDatavaultPage(); }
   });
 });
+
+var ddSettings=document.getElementById('ddSettings');
+if(ddSettings){
+  ddSettings.addEventListener('click',function(){
+    closeDD();
+    window.location.href='/roles.html';
+  });
+}
+
+var ddLogout=document.getElementById('ddLogout');
+if(ddLogout){
+  ddLogout.addEventListener('click',function(){
+    closeDD();
+    window.location.href='/logout?returnTo=%2F';
+  });
+}
 
 /* ════════════════════════════════
    WIDGETS PAGE BUILD

@@ -1,0 +1,16 @@
+{
+  "base_url": "http://localhost:3000",
+  "port": 3000,
+  "session_days": 7,
+  "flask_secret_key": "CHANGE_ME_TO_A_LONG_RANDOM_STRING",
+  "auth0": {
+    "issuer_base_url": "https://dev-igv7boxc5bnarqa5.us.auth0.com",
+    "client_id": "b1WRBo6Dcu7uRiClNprDCp1NE2gqwr8M",
+    "client_secret": "osxDrkB5JS9xqdeKhy8QcRSKplo0qVCB39RD7qp4yoji_kctJ4OEAPaIefV9L125",
+    "secret": "CHANGE_ME_TO_A_LONG_RANDOM_STRING",
+    "connections": [
+      { "id": "google-oauth2", "label": "Google" },
+      { "id": "windowslive", "label": "Microsoft" }
+    ]
+  }
+}
